@@ -89,8 +89,7 @@ namespace SpaceSim
             enemyShip.AddComponent(new TextureComponent(new Coord(1, 0), "ships", new Vector2(64, 64)));
             enemyShip.AddComponent(new InertiaComponent());
             //enemyShip.AddComponent(new PlayerControlComponent());
-            enemyShip.AddComponent(new ThrustComponent());
-            
+            enemyShip.AddComponent(new ThrustComponent());            
 
             this.Active = true;
             this.Initialised = true;
