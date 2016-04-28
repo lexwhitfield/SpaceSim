@@ -1,0 +1,28 @@
+﻿TODO:
+
+-	Background stars with paralax scrolling
+	Beam weapons
+*	Engine glow when thrusting
+		Engine particle effects
+	NPC Ships
+		NPC Behaviour
+	Targeting
+		NPCs
+		Planets (Landable things)
+	Missile weapons (tracking)
+	Ship HP
+*	Collision Detection (Farseer Engine)
+	Zoom based on speed
+
+
+
+	BEAM SYSTEM CODE
+
+	beam = new BasicPrimitives(Game.GraphicsDevice);
+
+	beam.ClearVectors();
+	beam.AddVector(startPosition);
+	beam.AddVector(endPosition);
+	beam.Color = Color.White;
+	beam.Thickness = 3;
+	beam.RenderPolygonPrimitive(spriteBatch);
