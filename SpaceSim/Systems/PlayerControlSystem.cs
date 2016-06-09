@@ -29,32 +29,6 @@ namespace SpaceSim.Systems
             ThrustComponent tc = entity.GetComponent<ThrustComponent>();
             RotationComponent rc = entity.GetComponent<RotationComponent>();
 
-            if (InputManager.Instance.isKeyDown(Keys.W))
-                tc.ForwardThrust = true;
-            else
-                tc.ForwardThrust = false;
-
-            if (InputManager.Instance.isKeyDown(Keys.S))
-                tc.BackwardThrust = true;
-            else
-                tc.BackwardThrust = false;
-
-            if (InputManager.Instance.isKeyDown(Keys.Q))
-                tc.LeftThrust = true;
-            else
-                tc.LeftThrust = false;
-
-            if (InputManager.Instance.isKeyDown(Keys.E))
-                tc.RightThrust = true;
-            else
-                tc.RightThrust = false;
-
-            if (InputManager.Instance.isKeyDown(Keys.A))
-                rc.Angle = MathFunctions.ClampAngle(rc.Angle - rc.RotationSpeed);
-
-            if (InputManager.Instance.isKeyDown(Keys.D))
-                rc.Angle = MathFunctions.ClampAngle(rc.Angle + rc.RotationSpeed);
-
             if (InputManager.Instance.isKeyReleased(Keys.Space))
             {
                 PositionComponent pc = entity.GetComponent<PositionComponent>();

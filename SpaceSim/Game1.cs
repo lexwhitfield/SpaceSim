@@ -25,7 +25,7 @@ namespace SpaceSim
                 PreferredDepthStencilFormat = DepthFormat.None
             };
 
-            this.IsMouseVisible = true;
+            this.IsMouseVisible = false;
             this.Content.RootDirectory = "Content";
         }
 

@@ -28,19 +28,26 @@ namespace SpaceSim.Systems
         protected override void ProcessEntities(IDictionary<int, Entity> entities)
         {
             // draw background
+            //ScreenManager.Instance.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, , null, null, null, this._boundedCamera.TranslationMatrix);
+
+            ////ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetTexture("starfield0"), new Rectangle((int)(this._boundedCamera.Bounds.Point1.X), (int)(this._boundedCamera.Bounds.Point1.Y), (this._boundedCamera.Bounds.Point2.X - this._boundedCamera.Bounds.Point1.X), (this._boundedCamera.Bounds.Point2.Y - this._boundedCamera.Bounds.Point1.Y)), Color.White);
+            ////ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetTexture("starfield2"), new Rectangle((int)(this._boundedCamera.Position.X * 0.4f), (int)(this._boundedCamera.Position.Y * 0.4f), 1228, 1228), Color.White);
+            
+            //ScreenManager.Instance.SpriteBatch.End();
+
             ScreenManager.Instance.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, this._boundedCamera.TranslationMatrix);
 
-            //ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetTexture("starfield0"), new Rectangle((int)(this._boundedCamera.Bounds.Point1.X), (int)(this._boundedCamera.Bounds.Point1.Y), (this._boundedCamera.Bounds.Point2.X - this._boundedCamera.Bounds.Point1.X), (this._boundedCamera.Bounds.Point2.Y - this._boundedCamera.Bounds.Point1.Y)), Color.White);
-            //ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetTexture("starfield2"), new Rectangle((int)(this._boundedCamera.Position.X * 0.4f), (int)(this._boundedCamera.Position.Y * 0.4f), 1228, 1228), Color.White);
             ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetTexture("starfield2"), new Vector2(this._boundedCamera.Bounds.Point1.X, this._boundedCamera.Bounds.Point1.Y), new Rectangle(0, 0, 1228 * 20, 1228 * 20), Color.White);
-
-            ScreenManager.Instance.SpriteBatch.End();
-
-            ScreenManager.Instance.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, this._boundedCamera.TranslationMatrix);
 
             foreach (Entity entity in entities.Values)
             {
                 Process(entity);
+            }
+
+            if (Player.Instance.TargetLocation.HasValue)
+            {
+                Rectangle dest = new Rectangle((int)Player.Instance.TargetLocation.Value.X, (int)Player.Instance.TargetLocation.Value.Y, 25, 25);
+                ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetSpriteSheet("cursors").Texture, dest, ResourceManager.Instance.GetSpriteSheet("cursors").GetSourceRect(1, 0), Color.White, 0, new Vector2(12.5f, 12.5f), SpriteEffects.None, 0f);
             }
 
             ScreenManager.Instance.SpriteBatch.End();
@@ -59,12 +66,12 @@ namespace SpaceSim.Systems
 
             ScreenManager.Instance.SpriteBatch.Draw(texture, destRect, sourceRect, Color.White, MathHelper.ToRadians(rc.Angle), tc.Origin, SpriteEffects.None, 0f);
 
-            if (sc != null)
-            {
-                Rectangle shadowSourceRect = ResourceManager.Instance.GetSpriteSheet(sc.Texture).GetSourceRect(sc.Position.X, sc.Position.Y);
-                Texture2D shadowTexture = ResourceManager.Instance.GetSpriteSheet(sc.Texture).Texture;
-                ScreenManager.Instance.SpriteBatch.Draw(shadowTexture, destRect, shadowSourceRect, Color.White, sc.Angle, sc.Origin, SpriteEffects.None, 0f);
-            }
+            //if (sc != null)
+            //{
+            //    Rectangle shadowSourceRect = ResourceManager.Instance.GetSpriteSheet(sc.Texture).GetSourceRect(sc.Position.X, sc.Position.Y);
+            //    Texture2D shadowTexture = ResourceManager.Instance.GetSpriteSheet(sc.Texture).Texture;
+            //    ScreenManager.Instance.SpriteBatch.Draw(shadowTexture, destRect, shadowSourceRect, Color.White, sc.Angle, sc.Origin, SpriteEffects.None, 0f);
+            //}
         }
     }
 }

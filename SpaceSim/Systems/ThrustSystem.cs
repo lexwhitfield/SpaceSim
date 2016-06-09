@@ -16,7 +16,7 @@ namespace SpaceSim.Systems
     public class ThrustSystem : EntityProcessingSystem
     {
         public ThrustSystem()
-            : base(Aspect.All(typeof(ThrustComponent), typeof(InertiaComponent)))
+            : base(Aspect.All(typeof(ThrustComponent), typeof(InertiaComponent), typeof(RotationComponent)))
         {
 
         }
@@ -31,8 +31,8 @@ namespace SpaceSim.Systems
                 RotationComponent rc = entity.GetComponent<RotationComponent>();
 
                 double angleInDegrees = MathHelper.ToRadians(rc.Angle);
-                ic.Inertia.X += (float)Math.Sin(angleInDegrees) * 0.15f;
-                ic.Inertia.Y += -(float)Math.Cos(angleInDegrees) * 0.15f;
+                ic.Inertia.X += (float)Math.Sin(angleInDegrees) * tc.Acceleration;
+                ic.Inertia.Y += -(float)Math.Cos(angleInDegrees) * tc.Acceleration;
 
                 if (ic.Inertia.Length() > tc.MaxSpeed)
                 {
@@ -44,13 +44,16 @@ namespace SpaceSim.Systems
             if (tc.BackwardThrust)
             {
                 InertiaComponent ic = entity.GetComponent<InertiaComponent>();
-                //RotationComponent rc = entity.GetComponent<RotationComponent>();
+                RotationComponent rc = entity.GetComponent<RotationComponent>();
 
-                ic.Inertia = Vector2.Multiply(ic.Inertia, 0.98f);
+                float currentSpeed = ic.Inertia.Length();
 
-                if (ic.Inertia.Length() < 0.01f)
+                ic.Inertia = Vector2.Multiply(ic.Inertia, tc.Deceleration);
+
+                if (ic.Inertia.Length() < tc.Acceleration)
                 {
-                    ic.Inertia = Vector2.Multiply(ic.Inertia, 0);
+                    ic.Inertia.X = 0;
+                    ic.Inertia.Y = 0;
                 }
             }
 

@@ -16,7 +16,7 @@ namespace SpaceSim.Systems
     internal class InertiaSystem : EntityProcessingSystem
     {
         public InertiaSystem()
-            : base(Aspect.All(typeof(InertiaComponent), typeof(PositionComponent), typeof(RotationComponent)))
+            : base(Aspect.All(typeof(InertiaComponent), typeof(PositionComponent)))
         {
 
         }

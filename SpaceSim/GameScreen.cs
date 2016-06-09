@@ -1,6 +1,5 @@
 ﻿using Artemis;
 using Artemis.System;
-using FarseerPhysics.Dynamics;
 using GameLibrary.Core;
 using GameLibrary.Networks;
 using Microsoft.Xna.Framework;
@@ -18,17 +17,12 @@ namespace SpaceSim
 {
     public class GameScreen : Screen
     {
-       
-        
-
         private double frameRate = 0;
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
 
         private EntityWorld _entityEngine;
         private int playerEntityID;
-
-        private World _physicsEngine;
 
         public GameScreen(Game game, GraphicsDeviceManager gdm)
             : base(game, gdm)
@@ -48,16 +42,17 @@ namespace SpaceSim
 
         public override void Initialise()
         {
-            
+            HUD.Instance.ScreenSize = new Point(_gdm.GraphicsDevice.Viewport.Width, _gdm.GraphicsDevice.Viewport.Height);
+
+            Player.Instance.SetScreen(this);
+
             this._camera = new BoundedCamera(new Vector2(_gdm.GraphicsDevice.Viewport.Width, _gdm.GraphicsDevice.Viewport.Height),
                 new Vector2(0, 0),
                 new PointPair(new Vector2i(-10000, -10000), new Vector2i(10000, 10000)));
 
             this._entityEngine = new EntityWorld();
-            this._physicsEngine = new World(new Microsoft.Xna.Framework.Vector2(0, 0));
-           
+
             EntitySystem.BlackBoard.SetEntry<BoundedCamera>("BoundedCamera", this._camera);
-            EntitySystem.BlackBoard.SetEntry<World>("PhysicsEngine", this._physicsEngine);
 
             this._entityEngine.InitializeAll(true);
 
@@ -79,7 +74,9 @@ namespace SpaceSim
             playerShip.AddComponent(new InertiaComponent());
             playerShip.AddComponent(new PlayerControlComponent());
             playerShip.AddComponent(new ThrustComponent());
+            playerShip.AddComponent(new NavigationComponent());
             this.playerEntityID = playerShip.Id;
+            Player.Instance.Flagship = playerShip;
 
             Entity enemyShip = this._entityEngine.CreateEntity();
             enemyShip.Group = "TARGETS";
@@ -88,8 +85,8 @@ namespace SpaceSim
             enemyShip.AddComponent(new RotationComponent(0, 2f, false));
             enemyShip.AddComponent(new TextureComponent(new Coord(1, 0), "ships", new Vector2(64, 64)));
             enemyShip.AddComponent(new InertiaComponent());
-            //enemyShip.AddComponent(new PlayerControlComponent());
-            enemyShip.AddComponent(new ThrustComponent());            
+            enemyShip.AddComponent(new NavigationComponent());
+            enemyShip.AddComponent(new ThrustComponent());
 
             this.Active = true;
             this.Initialised = true;
@@ -103,6 +100,7 @@ namespace SpaceSim
             ResourceManager.Instance.LoadSpriteSheet("blue1", "blue1", 1100, 1100);
             ResourceManager.Instance.LoadTexture("starfield0", "starfield0");
             ResourceManager.Instance.LoadTexture("starfield2", "starfield2");
+            ResourceManager.Instance.LoadSpriteSheet("cursors", "cursors", 25, 25);
 
             ResourceManager.Instance.LoadFont("font", "font");
         }
@@ -121,10 +119,16 @@ namespace SpaceSim
                 if (InputManager.Instance.isKeyDown(Keys.Escape))
                     ScreenManager.Instance.Push(new MenuScreen(_game, _gdm));
 
-                if (InputManager.Instance.MouseScrollWheelDelta < 0)
-                    _camera.AdjustZoom(-0.1f);
-                if (InputManager.Instance.MouseScrollWheelDelta > 0)
-                    _camera.AdjustZoom(0.1f);
+                //if (InputManager.Instance.MouseScrollWheelDelta < 0)
+                //    _camera.AdjustZoom(-0.1f);
+                //if (InputManager.Instance.MouseScrollWheelDelta > 0)
+                //    _camera.AdjustZoom(0.1f);
+
+                // left mouse button = select thing
+
+                // right mouse button = move
+                if (InputManager.Instance.isRightMouseClicked())
+                    Player.Instance.Flagship.GetComponent<NavigationComponent>().TargetLocation = _camera.ScreenToWorld(InputManager.Instance.CurrentMousePosition);
             }
         }
 
@@ -135,6 +139,7 @@ namespace SpaceSim
             this._entityEngine.Update();
 
             _camera.Position = _entityEngine.GetEntity(playerEntityID).GetComponent<PositionComponent>().Position;
+            _camera.SetZoom(1f / (1f + (_entityEngine.GetEntity(playerEntityID).GetComponent<InertiaComponent>().Inertia.Length() / 20)));
 
             elapsedTime += gameTime.ElapsedGameTime;
 
@@ -144,6 +149,19 @@ namespace SpaceSim
                 frameRate = frameCounter;
                 frameCounter = 0;
             }
+
+#if DEBUG
+
+            HUD.Instance.AddUpdateMetric("ActiveEntities", string.Format("Active entities: {0}", _entityEngine.EntityManager.ActiveEntities.Count));
+            HUD.Instance.AddUpdateMetric("MemoryUsed", string.Format("Memory used: {0}MB", Math.Round((double)GC.GetTotalMemory(false) / 1048576, 2)));
+            HUD.Instance.AddUpdateMetric("FPS", string.Format("Frames per second: {0}", frameRate));
+            HUD.Instance.AddUpdateMetric("MousePos", string.Format("Mouse Position: {0},{1}", InputManager.Instance.CurrentMousePosition.X, InputManager.Instance.CurrentMousePosition.Y));
+            HUD.Instance.AddUpdateMetric("DrawCalls", string.Format("Draw Calls: {0}", ScreenManager.Instance.SpriteBatch.GraphicsDevice.Metrics.DrawCount));
+            HUD.Instance.AddUpdateMetric("SpriteCount", string.Format("Sprite Count: {0}", ScreenManager.Instance.SpriteBatch.GraphicsDevice.Metrics.SpriteCount));
+            HUD.Instance.AddUpdateMetric("TextureBinds", string.Format("Texture Binds: {0}", ScreenManager.Instance.SpriteBatch.GraphicsDevice.Metrics.TextureCount));
+            HUD.Instance.AddUpdateMetric("PrimativeCount", string.Format("Primative Count: {0}", ScreenManager.Instance.SpriteBatch.GraphicsDevice.Metrics.PrimitiveCount));
+
+#endif
         }
 
         public override void Draw(GameTime gameTime)
@@ -152,17 +170,15 @@ namespace SpaceSim
 
             this._entityEngine.Draw();
 
-#if DEBUG
             ScreenManager.Instance.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, null);
 
-            frameCounter++;
-            ScreenManager.Instance.SpriteBatch.DrawString(ResourceManager.Instance.GetFont("font"), string.Format("Active entities: {0}", _entityEngine.EntityManager.ActiveEntities.Count), new Vector2(10, 10), Color.LightGray);
-            ScreenManager.Instance.SpriteBatch.DrawString(ResourceManager.Instance.GetFont("font"), string.Format("Memory used: {0}MB", Math.Round((double)GC.GetTotalMemory(false) / 1048576, 2)), new Vector2(10, 30), Color.LightGray);
-            ScreenManager.Instance.SpriteBatch.DrawString(ResourceManager.Instance.GetFont("font"), string.Format("Frames per second: {0}", frameRate), new Vector2(10, 50), Color.LightGray);
-            ScreenManager.Instance.SpriteBatch.DrawString(ResourceManager.Instance.GetFont("font"), string.Format("Mouse Position: {0},{1}", InputManager.Instance.CurrentMousePosition.X, InputManager.Instance.CurrentMousePosition.Y), new Vector2(10, 70), Color.LightGray);
+            Rectangle dest = new Rectangle((int)InputManager.Instance.CurrentMousePosition.X, (int)InputManager.Instance.CurrentMousePosition.Y, 25, 25);
+            ScreenManager.Instance.SpriteBatch.Draw(ResourceManager.Instance.GetSpriteSheet("cursors").Texture, dest, ResourceManager.Instance.GetSpriteSheet("cursors").GetSourceRect(0, 0), Color.White, 0, new Vector2(12.5f, 12.5f), SpriteEffects.None, 0f);
+
+            HUD.Instance.Draw();
 
             ScreenManager.Instance.SpriteBatch.End();
-#endif
+
         }
     }
 }

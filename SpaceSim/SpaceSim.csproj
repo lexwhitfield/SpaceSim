@@ -42,7 +42,9 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\CollisionComponent.cs" />
     <Compile Include="Components\InertiaComponent.cs" />
+    <Compile Include="Components\NavigationComponent.cs" />
     <Compile Include="Components\OrbiterComponent.cs" />
     <Compile Include="Components\PlayerControlComponent.cs" />
     <Compile Include="Components\PositionComponent.cs" />
@@ -53,12 +55,17 @@
     <Compile Include="Components\TextureComponent.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameScreen.cs" />
+    <Compile Include="HUD.cs" />
+    <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShipTemplates.cs" />
+    <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\InertiaSystem.cs" />
     <Compile Include="Systems\MenuScreen.cs" />
+    <Compile Include="Systems\NavigationSystem.cs" />
     <Compile Include="Systems\OrbitSystem.cs" />
+    <Compile Include="Systems\PhysicsRenderSystem.cs" />
     <Compile Include="Systems\PlayerControlSystem.cs" />
     <Compile Include="Systems\ProjectileSystem.cs" />
     <Compile Include="Systems\RenderSystem.cs" />
@@ -76,6 +83,10 @@
     <Reference Include="MonoGame.Framework.Net, Version=3.5.1.1679, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.3.4\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="OpenTK">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\OpenTK.dll</HintPath>
@@ -97,10 +108,6 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\..\libs\Farseer Physics Engine 3.5 Samples\Farseer Physics Engine 3.5\Farseer Physics MonoGame.csproj">
-      <Project>{0aad36e3-51a5-4a07-ab60-5c8a66bd38b7}</Project>
-      <Name>Farseer Physics MonoGame</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\GameLibrary\GameLibrary\GameLibrary.csproj">
       <Project>{df9f3eaf-0997-4d57-a8ee-0e729d01f46e}</Project>
       <Name>GameLibrary</Name>
@@ -108,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
